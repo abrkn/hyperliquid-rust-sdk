@@ -1,5 +1,5 @@
-use hyperliquid_rust_sdk::Message;
-use hyperliquid_rust_sdk::{robust::Subs, BaseUrl, Subscription};
+use hyperliquid_rust_sdk_abrkn::Message;
+use hyperliquid_rust_sdk_abrkn::{robust::Subs, BaseUrl, Subscription};
 use tokio::{
     sync::mpsc,
     time::{sleep, Duration},

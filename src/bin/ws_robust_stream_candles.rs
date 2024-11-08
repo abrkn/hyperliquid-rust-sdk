@@ -1,4 +1,6 @@
-use hyperliquid_rust_sdk::{robust::Stream, BaseUrl, Message, Subscription, SubscriptionSendData};
+use hyperliquid_rust_sdk_abrkn::{
+    robust::Stream, BaseUrl, Message, Subscription, SubscriptionSendData,
+};
 use std::time::Duration;
 use tokio::{spawn, sync::mpsc, time::sleep};
 

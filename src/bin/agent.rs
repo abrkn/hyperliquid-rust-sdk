@@ -1,7 +1,9 @@
 use log::info;
 
 use ethers::signers::{LocalWallet, Signer};
-use hyperliquid_rust_sdk::{BaseUrl, ClientLimit, ClientOrder, ClientOrderRequest, ExchangeClient};
+use hyperliquid_rust_sdk_abrkn::{
+    BaseUrl, ClientLimit, ClientOrder, ClientOrderRequest, ExchangeClient,
+};
 
 #[tokio::main]
 async fn main() {

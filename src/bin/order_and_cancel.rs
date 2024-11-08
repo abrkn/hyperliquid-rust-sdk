@@ -1,7 +1,7 @@
 use ethers::signers::LocalWallet;
 use log::info;
 
-use hyperliquid_rust_sdk::{
+use hyperliquid_rust_sdk_abrkn::{
     BaseUrl, ClientCancelRequest, ClientLimit, ClientOrder, ClientOrderRequest, ExchangeClient,
     ExchangeDataStatus, ExchangeResponseStatus,
 };
