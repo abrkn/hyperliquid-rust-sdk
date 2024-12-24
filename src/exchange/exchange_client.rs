@@ -29,7 +29,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use super::cancel::ClientCancelRequestCloid;
-use super::order::{MarketCloseParams, MarketOrderParams};
+use super::order::{MarketCloseParams, MarketOrderParams, OrderRequest};
 use super::{ClientLimit, ClientOrder};
 
 pub struct ExchangeClient {
@@ -364,22 +364,16 @@ impl ExchangeClient {
         self.bulk_order(vec![order], wallet).await
     }
 
-    pub async fn bulk_order(
+    pub async fn bulk_order_prepared(
         &self,
-        orders: Vec<ClientOrderRequest>,
+        orders: Vec<OrderRequest>,
         wallet: Option<&LocalWallet>,
     ) -> Result<ExchangeResponseStatus> {
         let wallet = wallet.unwrap_or(&self.wallet);
         let timestamp = next_nonce();
 
-        let mut transformed_orders = Vec::new();
-
-        for order in orders {
-            transformed_orders.push(order.convert(&self.coin_to_asset)?);
-        }
-
         let action = Actions::Order(BulkOrder {
-            orders: transformed_orders,
+            orders,
             grouping: "na".to_string(),
         });
         let connection_id = action.hash(timestamp, self.vault_address)?;
@@ -388,6 +382,20 @@ impl ExchangeClient {
         let is_mainnet = self.http_client.is_mainnet();
         let signature = sign_l1_action(wallet, connection_id, is_mainnet)?;
         self.post(action, signature, timestamp).await
+    }
+
+    pub async fn bulk_order(
+        &self,
+        orders: Vec<ClientOrderRequest>,
+        wallet: Option<&LocalWallet>,
+    ) -> Result<ExchangeResponseStatus> {
+        let mut transformed_orders = Vec::new();
+
+        for order in orders {
+            transformed_orders.push(order.convert(&self.coin_to_asset)?);
+        }
+
+        self.bulk_order_prepared(transformed_orders, wallet).await
     }
 
     pub async fn cancel(
@@ -438,14 +446,29 @@ impl ExchangeClient {
         self.bulk_modify(vec![modify], wallet).await
     }
 
-    pub async fn bulk_modify(
+    pub async fn bulk_modify_prepared(
         &self,
-        modifies: Vec<ClientModifyRequest>,
+        modifies: Vec<ModifyRequest>,
         wallet: Option<&LocalWallet>,
     ) -> Result<ExchangeResponseStatus> {
         let wallet = wallet.unwrap_or(&self.wallet);
         let timestamp = next_nonce();
 
+        let action = Actions::Modify(BulkModify { modifies });
+        let connection_id = action.hash(timestamp, self.vault_address)?;
+
+        let action = serde_json::to_value(&action).map_err(|e| Error::JsonParse(e.to_string()))?;
+        let is_mainnet = self.http_client.is_mainnet();
+        let signature = sign_l1_action(wallet, connection_id, is_mainnet)?;
+
+        self.post(action, signature, timestamp).await
+    }
+
+    pub async fn bulk_modify(
+        &self,
+        modifies: Vec<ClientModifyRequest>,
+        wallet: Option<&LocalWallet>,
+    ) -> Result<ExchangeResponseStatus> {
         let mut transformed_modifies = Vec::new();
         for modify in modifies.into_iter() {
             transformed_modifies.push(ModifyRequest {
@@ -454,16 +477,8 @@ impl ExchangeClient {
             });
         }
 
-        let action = Actions::Modify(BulkModify {
-            modifies: transformed_modifies,
-        });
-        let connection_id = action.hash(timestamp, self.vault_address)?;
-
-        let action = serde_json::to_value(&action).map_err(|e| Error::JsonParse(e.to_string()))?;
-        let is_mainnet = self.http_client.is_mainnet();
-        let signature = sign_l1_action(wallet, connection_id, is_mainnet)?;
-
-        self.post(action, signature, timestamp).await
+        self.bulk_modify_prepared(transformed_modifies, wallet)
+            .await
     }
 
     pub async fn cancel_by_cloid(
