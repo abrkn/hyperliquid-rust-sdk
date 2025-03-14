@@ -3,7 +3,7 @@ use crate::{
         CandlesSnapshotResponse, FundingHistoryResponse, L2SnapshotResponse, OpenOrdersResponse,
         RecentTradesResponse, UserFillsResponse, UserStateResponse,
     },
-    meta::{Meta, SpotMeta, SpotMetaAndAssetCtxs},
+    meta::{Meta, MetaAndAssetCtxs, SpotMeta, SpotMetaAndAssetCtxs},
     prelude::*,
     req::HttpClient,
     ws::{Subscription, WsManager},
@@ -59,6 +59,7 @@ pub enum InfoRequest {
     },
     Meta,
     SpotMeta,
+    MetaAndAssetCtxs,
     SpotMetaAndAssetCtxs,
     AllMids,
     UserFills {
@@ -185,6 +186,11 @@ impl InfoClient {
 
     pub async fn spot_meta(&self) -> Result<SpotMeta> {
         let input = InfoRequest::SpotMeta;
+        self.send_info_request(input).await
+    }
+
+    pub async fn meta_and_asset_contexts(&self) -> Result<MetaAndAssetCtxs> {
+        let input = InfoRequest::MetaAndAssetCtxs;
         self.send_info_request(input).await
     }
 

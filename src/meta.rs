@@ -8,6 +8,21 @@ pub struct Meta {
     pub universe: Vec<AssetMeta>,
 }
 
+pub type MetaAndAssetCtxs = (Meta, Vec<AssetContext>);
+#[derive(Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct AssetContext {
+    pub day_ntl_vlm: String,
+    pub funding: String,
+    pub impact_pxs: Option<(String, String)>,
+    pub mark_px: String,
+    pub mid_px: Option<String>,
+    pub open_interest: Option<String>,
+    pub oracle_px: Option<String>,
+    pub premium: Option<String>,
+    pub prev_day_px: Option<String>,
+}
+
 #[derive(Deserialize, Debug, Clone)]
 pub struct SpotMeta {
     pub universe: Vec<SpotAssetMeta>,
