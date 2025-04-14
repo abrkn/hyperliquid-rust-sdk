@@ -90,6 +90,7 @@ pub enum InfoRequest {
     Referral {
         user: H160,
     },
+    PerpsAtOpenInterestCap,
 }
 
 pub struct InfoClient {
@@ -284,6 +285,11 @@ impl InfoClient {
 
     pub async fn query_referral_state(&self, address: H160) -> Result<ReferralResponse> {
         let input = InfoRequest::Referral { user: address };
+        self.send_info_request(input).await
+    }
+
+    pub async fn perps_at_open_interest_cap(&self) -> Result<Vec<String>> {
+        let input = InfoRequest::PerpsAtOpenInterestCap;
         self.send_info_request(input).await
     }
 }
