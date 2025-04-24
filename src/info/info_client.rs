@@ -66,6 +66,18 @@ pub enum InfoRequest {
         user: H160,
     },
     #[serde(rename_all = "camelCase")]
+    UserFillsByTime {
+        user: H160,
+        /// Start time in milliseconds, inclusive
+        start_time: u64,
+        /// End time in milliseconds, inclusive. Defaults to current time.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        end_time: Option<u64>,
+        /// When true, partial fills are combined when a crossing order gets filled by multiple different resting orders. Resting orders filled by multiple crossing orders will not be aggregated.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        aggregate_by_time: Option<bool>,
+    },
+    #[serde(rename_all = "camelCase")]
     FundingHistory {
         coin: String,
         start_time: u64,
@@ -207,6 +219,23 @@ impl InfoClient {
 
     pub async fn user_fills(&self, address: H160) -> Result<Vec<UserFillsResponse>> {
         let input = InfoRequest::UserFills { user: address };
+        self.send_info_request(input).await
+    }
+
+    pub async fn user_fills_by_time(
+        &self,
+        address: H160,
+        start_time: u64,
+        end_time: Option<u64>,
+        aggregate_by_time: Option<bool>,
+    ) -> Result<Vec<UserFillsResponse>> {
+        let input = InfoRequest::UserFillsByTime {
+            user: address,
+            start_time,
+            end_time,
+            aggregate_by_time,
+        };
+
         self.send_info_request(input).await
     }
 
